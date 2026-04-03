@@ -1,0 +1,53 @@
+name: Send Subscription Alerts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 22 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Restore alert state cache
+        id: restore_alert_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .state/sent-alerts.json
+          key: alert-state-${{ github.run_id }}
+          restore-keys: |
+            alert-state-
+
+      - name: Build latest listings data
+        run: npm run data:build
+
+      - name: Send reminders
+        env:
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: npm run alerts:send
+
+      - name: Save alert state cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .state/sent-alerts.json
+          key: alert-state-${{ github.run_id }}

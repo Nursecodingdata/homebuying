@@ -1,0 +1,253 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
+
+:root {
+  --bg-main: #f4f0e7;
+  --bg-secondary: #f7f8ff;
+  --ink-strong: #1d252f;
+  --ink-mid: #3d4958;
+  --ink-soft: #67768a;
+  --accent-main: #1f6feb;
+  --accent-warm: #d96d1b;
+  --accent-danger: #d03a34;
+  --surface: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.9);
+  --border: rgba(26, 40, 59, 0.15);
+  --shadow: 0 18px 50px rgba(38, 57, 84, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Pretendard Variable", "Apple SD Gothic Neo", sans-serif;
+  color: var(--ink-strong);
+  background:
+    radial-gradient(circle at 15% 15%, #ffd8b0 0, transparent 45%),
+    radial-gradient(circle at 88% 20%, #cde7ff 0, transparent 35%),
+    linear-gradient(130deg, var(--bg-main) 0%, var(--bg-secondary) 55%, #f5fbf6 100%);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 52px;
+}
+
+.hero {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 28px;
+  animation: slideUp 0.6s ease-out;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+
+h1 {
+  margin: 0;
+  line-height: 1.2;
+  font-size: clamp(1.6rem, 3.6vw, 2.6rem);
+}
+
+.description {
+  margin: 14px 0 0;
+  color: var(--ink-mid);
+}
+
+.controls {
+  margin: 20px 0 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface-glass);
+  color: var(--ink-mid);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.chip.active {
+  background: var(--ink-strong);
+  color: #fff;
+  border-color: var(--ink-strong);
+}
+
+.chip.secondary.active {
+  background: var(--accent-main);
+  border-color: var(--accent-main);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--ink-soft);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.notice {
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--ink-mid);
+}
+
+.notice.error {
+  border-color: rgba(208, 58, 52, 0.35);
+  color: var(--accent-danger);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 10px 22px rgba(40, 54, 80, 0.09);
+  padding: 16px;
+  display: grid;
+  gap: 9px;
+  animation: slideUp 0.5s ease-out;
+}
+
+.card.urgent {
+  border-color: rgba(217, 109, 27, 0.48);
+  background: linear-gradient(180deg, #fff8f2, #ffffff);
+}
+
+.card.open {
+  border-color: rgba(31, 111, 235, 0.45);
+  background: linear-gradient(180deg, #f1f7ff, #ffffff);
+}
+
+.card.closed {
+  opacity: 0.74;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+}
+
+.badge.urgent {
+  color: #8f4305;
+  background: rgba(255, 214, 174, 0.58);
+  border-color: rgba(217, 109, 27, 0.35);
+}
+
+.badge.upcoming {
+  color: #47586b;
+  background: rgba(213, 222, 232, 0.54);
+  border-color: rgba(75, 96, 120, 0.28);
+}
+
+.badge.open {
+  color: #0b4aa8;
+  background: rgba(186, 216, 255, 0.6);
+  border-color: rgba(31, 111, 235, 0.34);
+}
+
+.badge.closed {
+  color: #5f666f;
+  background: rgba(220, 225, 230, 0.55);
+  border-color: rgba(98, 108, 122, 0.24);
+}
+
+.dday {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  line-height: 1.3;
+}
+
+.sub,
+.date,
+.provider {
+  margin: 0;
+  color: var(--ink-mid);
+  font-size: 14px;
+}
+
+.link {
+  width: fit-content;
+  border-radius: 10px;
+  border: 1px solid rgba(31, 111, 235, 0.35);
+  color: var(--accent-main);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.link:hover {
+  background: rgba(31, 111, 235, 0.08);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 18px 14px 34px;
+  }
+
+  .hero {
+    border-radius: 16px;
+    padding: 18px;
+  }
+
+  .card {
+    border-radius: 14px;
+    padding: 14px;
+  }
+}

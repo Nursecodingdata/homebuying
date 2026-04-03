@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-04-03 00:00:00 KST",
+  "itemCount": 3,
+  "logs": [
+    "청약홈: 실패 (fetch failed)",
+    "SH공사: 실패 (fetch failed)",
+    "공식 파싱 데이터가 없어 기존 데이터 유지"
+  ],
+  "items": [
+    {
+      "id": "gwacheon-jiteoksikjeongbotawoon-gonggongbunyang-2026-04-11-과천-lh",
+      "name": "과천 지식정보타운 공공분양",
+      "region": "과천",
+      "subregion": "과천",
+      "provider": "LH",
+      "supplyType": "청약 접수",
+      "applicationStartDate": "2026-04-11",
+      "applicationEndDate": "2026-04-13",
+      "announcementUrl": "https://apply.lh.or.kr/",
+      "source": "https://apply.lh.or.kr/",
+      "lastCheckedAt": "2026-04-03 00:00:00 KST"
+    },
+    {
+      "id": "bundang-seongnamsi-bundanggu-mingabunyang-2026-04-17-분당-청약홈",
+      "name": "분당(성남시 분당구) 민간분양",
+      "region": "분당",
+      "subregion": "성남시 분당구",
+      "provider": "청약홈",
+      "supplyType": "청약 접수",
+      "applicationStartDate": "2026-04-17",
+      "applicationEndDate": "2026-04-18",
+      "announcementUrl": "https://www.applyhome.co.kr/",
+      "source": "https://www.applyhome.co.kr/",
+      "lastCheckedAt": "2026-04-03 00:00:00 KST"
+    },
+    {
+      "id": "seoul-gonggongbunyang-sajeoncheongyak-2026-04-24-서울-sh공사",
+      "name": "서울 공공분양 사전청약",
+      "region": "서울",
+      "subregion": "서울특별시",
+      "provider": "SH공사",
+      "supplyType": "청약 접수",
+      "applicationStartDate": "2026-04-24",
+      "applicationEndDate": "2026-04-26",
+      "announcementUrl": "https://www.i-sh.co.kr/app/lay2/program/S48T561C563/www/brd/m_247/list.do?multi_itm_seq=2",
+      "source": "https://www.i-sh.co.kr/",
+      "lastCheckedAt": "2026-04-03 00:00:00 KST"
+    }
+  ]
+}
