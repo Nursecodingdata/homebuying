@@ -100,7 +100,7 @@ h1 {
 
 .meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
   color: var(--ink-soft);
@@ -121,41 +121,48 @@ h1 {
   color: var(--accent-danger);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-}
-
-.card {
+.table-wrap {
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface);
+  border-radius: 16px;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 10px 22px rgba(40, 54, 80, 0.09);
-  padding: 16px;
-  display: grid;
-  gap: 9px;
-  animation: slideUp 0.5s ease-out;
 }
 
-.card.urgent {
-  border-color: rgba(217, 109, 27, 0.48);
-  background: linear-gradient(180deg, #fff8f2, #ffffff);
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
 }
 
-.card.open {
-  border-color: rgba(31, 111, 235, 0.45);
-  background: linear-gradient(180deg, #f1f7ff, #ffffff);
+.schedule-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #eff3fb;
+  color: #2b3a4d;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
 }
 
-.card.closed {
-  opacity: 0.74;
+.schedule-table tbody td {
+  border-bottom: 1px solid rgba(26, 40, 59, 0.1);
+  padding: 10px 12px;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #1e2b3a;
 }
 
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.schedule-table tbody tr:nth-child(even) {
+  background: rgba(245, 248, 253, 0.6);
+}
+
+.schedule-table tbody tr:hover {
+  background: rgba(201, 223, 255, 0.28);
 }
 
 .badge {
@@ -191,23 +198,10 @@ h1 {
   border-color: rgba(98, 108, 122, 0.24);
 }
 
-.dday {
-  font-weight: 800;
-  font-size: 13px;
-}
-
-h2 {
-  margin: 0;
-  font-size: 1.12rem;
-  line-height: 1.3;
-}
-
-.sub,
-.date,
-.provider {
-  margin: 0;
-  color: var(--ink-mid);
-  font-size: 14px;
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  font-size: 12px;
 }
 
 .link {
@@ -223,6 +217,10 @@ h2 {
 
 .link:hover {
   background: rgba(31, 111, 235, 0.08);
+}
+
+.name-cell {
+  min-width: 320px;
 }
 
 @keyframes slideUp {
@@ -244,10 +242,5 @@ h2 {
   .hero {
     border-radius: 16px;
     padding: 18px;
-  }
-
-  .card {
-    border-radius: 14px;
-    padding: 14px;
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const REGIONS = ["전체", "과천", "분당", "서울"];
+const CORE_REGIONS = ["과천", "분당", "서울"];
 const STATUS_LABELS = {
   all: "전체",
   urgent: "임박",
@@ -96,12 +96,15 @@ export default function App() {
     [hydrated, region, status]
   );
 
+  const regions = useMemo(() => ["전체", ...CORE_REGIONS], []);
+
   const meta = useMemo(() => {
-    if (!records.length) return { lastCheckedAt: "-", source: "-" };
+    if (!records.length) return { lastCheckedAt: "-", source: "-", generatedAt: "-" };
     const first = records[0];
     return {
       lastCheckedAt: first.lastCheckedAt ?? "-",
-      source: first.source ?? "-"
+      source: first.source ?? "-",
+      generatedAt: first.lastCheckedAt ?? "-"
     };
   }, [records]);
 
@@ -109,15 +112,15 @@ export default function App() {
     <div className="page">
       <header className="hero">
         <p className="eyebrow">KOREA HOUSING APPLICATION WATCH</p>
-        <h1>과천 · 분당 · 서울 청약 접수 일정</h1>
+        <h1>2026년 과천 · 분당 · 서울 청약 일정 테이블</h1>
         <p className="description">
-          임박 일정은 <strong>청약 시작 7일 이내</strong> 기준으로 자동 강조됩니다.
+          종료된 일정까지 포함해 <strong>컬럼형 테이블</strong>로 전체 일정을 보여줍니다.
         </p>
       </header>
 
       <section className="controls">
         <div className="chip-row">
-          {REGIONS.map((name) => (
+          {regions.map((name) => (
             <button
               key={name}
               className={`chip ${region === name ? "active" : ""}`}
@@ -143,6 +146,7 @@ export default function App() {
       </section>
 
       <section className="meta">
+        <span>전체 건수: {filtered.length}건</span>
         <span>데이터 출처: {meta.source}</span>
         <span>마지막 갱신: {meta.lastCheckedAt}</span>
       </section>
@@ -153,27 +157,45 @@ export default function App() {
         <p className="notice">조건에 맞는 청약 일정이 없습니다.</p>
       )}
 
-      <main className="grid">
-        {filtered.map((item) => (
-          <article key={item.id} className={`card ${item.status}`}>
-            <div className="card-top">
-              <span className={`badge ${item.status}`}>{STATUS_LABELS[item.status]}</span>
-              <span className="dday">{item.dday}</span>
-            </div>
-            <h2>{item.name}</h2>
-            <p className="sub">
-              {item.region} · {item.subregion} · {item.supplyType}
-            </p>
-            <p className="date">
-              접수 기간: {formatDate(item.applicationStartDate)} ~{" "}
-              {formatDate(item.applicationEndDate)}
-            </p>
-            <p className="provider">공급기관: {item.provider}</p>
-            <a className="link" href={item.announcementUrl} target="_blank" rel="noreferrer">
-              모집공고 바로가기
-            </a>
-          </article>
-        ))}
+      <main className="table-wrap">
+        <table className="schedule-table">
+          <thead>
+            <tr>
+              <th>상태</th>
+              <th>D-day</th>
+              <th>지역</th>
+              <th>세부지역</th>
+              <th>단지/공고명</th>
+              <th>공급유형</th>
+              <th>공급기관</th>
+              <th>접수 시작일</th>
+              <th>접수 종료일</th>
+              <th>공고 링크</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((item) => (
+              <tr key={item.id}>
+                <td>
+                  <span className={`badge ${item.status}`}>{STATUS_LABELS[item.status]}</span>
+                </td>
+                <td className="mono">{item.dday}</td>
+                <td>{item.region}</td>
+                <td>{item.subregion}</td>
+                <td className="name-cell">{item.name}</td>
+                <td>{item.supplyType}</td>
+                <td>{item.provider}</td>
+                <td className="mono">{formatDate(item.applicationStartDate)}</td>
+                <td className="mono">{formatDate(item.applicationEndDate)}</td>
+                <td>
+                  <a className="link" href={item.announcementUrl} target="_blank" rel="noreferrer">
+                    보기
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </main>
     </div>
   );

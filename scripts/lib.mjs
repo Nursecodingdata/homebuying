@@ -4,6 +4,28 @@ export const TARGET_REGIONS = [
   { region: "서울", pattern: /(서울시|서울특별시|서울)/ }
 ];
 
+export const KOREA_REGIONS = [
+  { region: "서울", pattern: /(서울시|서울특별시|서울)/ },
+  { region: "경기", pattern: /(경기도|경기)/ },
+  { region: "인천", pattern: /(인천시|인천광역시|인천)/ },
+  { region: "부산", pattern: /(부산시|부산광역시|부산)/ },
+  { region: "대구", pattern: /(대구시|대구광역시|대구)/ },
+  { region: "광주", pattern: /(광주시|광주광역시|광주)/ },
+  { region: "대전", pattern: /(대전시|대전광역시|대전)/ },
+  { region: "울산", pattern: /(울산시|울산광역시|울산)/ },
+  { region: "세종", pattern: /(세종시|세종특별자치시|세종)/ },
+  { region: "강원", pattern: /(강원도|강원특별자치도|강원)/ },
+  { region: "충북", pattern: /(충청북도|충북)/ },
+  { region: "충남", pattern: /(충청남도|충남)/ },
+  { region: "전북", pattern: /(전라북도|전북특별자치도|전북)/ },
+  { region: "전남", pattern: /(전라남도|전남)/ },
+  { region: "경북", pattern: /(경상북도|경북)/ },
+  { region: "경남", pattern: /(경상남도|경남)/ },
+  { region: "제주", pattern: /(제주도|제주특별자치도|제주)/ },
+  { region: "과천", pattern: /과천/ },
+  { region: "분당", pattern: /(분당|성남시\s*분당구)/ }
+];
+
 export function nowKstDate() {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat("sv-SE", {
@@ -44,6 +66,13 @@ export function classifyRegion(text) {
     if (target.pattern.test(text)) return target.region;
   }
   return null;
+}
+
+export function classifyRegionBroad(text) {
+  for (const target of KOREA_REGIONS) {
+    if (target.pattern.test(text)) return target.region;
+  }
+  return "기타";
 }
 
 export function buildItemId(name, startDate, region, provider) {
