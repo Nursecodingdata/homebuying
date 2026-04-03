@@ -7,6 +7,10 @@ on:
         description: "Force one test listing with start date = today + 7 days"
         required: false
         default: "false"
+      force_test_name:
+        description: "Name for forced test listing"
+        required: false
+        default: "[TEST] 서울 알림 검증용 일정"
   schedule:
     - cron: "0 22 * * *"
 
@@ -41,6 +45,7 @@ jobs:
       - name: Build latest listings data
         env:
           ALERT_TEST_FORCE_ITEM: ${{ github.event.inputs.force_test_item == 'true' && '1' || '0' }}
+          ALERT_TEST_ITEM_NAME: ${{ github.event.inputs.force_test_name }}
         run: npm run data:build
 
       - name: Send reminders

@@ -175,7 +175,7 @@ function withForcedTestItem(items, logs) {
   const today = nowKstDate();
   const start = addDaysKst(today, 7);
   const end = addDaysKst(today, 8);
-  const name = "[TEST] 서울 알림 검증용 일정";
+  const name = process.env.ALERT_TEST_ITEM_NAME?.trim() || "[TEST] 서울 알림 검증용 일정";
   const provider = "TEST";
   const region = "서울";
   const forced = {
