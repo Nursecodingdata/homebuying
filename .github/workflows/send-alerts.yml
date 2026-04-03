@@ -2,6 +2,11 @@ name: Send Subscription Alerts
 
 on:
   workflow_dispatch:
+    inputs:
+      force_test_item:
+        description: "Force one test listing with start date = today + 7 days"
+        required: false
+        default: "false"
   schedule:
     - cron: "0 22 * * *"
 
@@ -34,6 +39,8 @@ jobs:
             alert-state-
 
       - name: Build latest listings data
+        env:
+          ALERT_TEST_FORCE_ITEM: ${{ github.event.inputs.force_test_item == 'true' && '1' || '0' }}
         run: npm run data:build
 
       - name: Send reminders

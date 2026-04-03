@@ -85,6 +85,36 @@ function toPayload(items, logs) {
   };
 }
 
+function withForcedTestItem(items, logs) {
+  if (process.env.ALERT_TEST_FORCE_ITEM !== "1") {
+    return { items, logs };
+  }
+
+  const today = nowKstDate();
+  const start = addDaysKst(today, 7);
+  const end = addDaysKst(today, 8);
+  const name = "[TEST] 서울 알림 검증용 일정";
+  const provider = "TEST";
+  const region = "서울";
+  const forced = {
+    id: buildItemId(name, start, region, provider),
+    name,
+    region,
+    subregion: "서울특별시",
+    provider,
+    supplyType: "청약 접수",
+    applicationStartDate: start,
+    applicationEndDate: end,
+    announcementUrl: "https://github.com/Nursecodingdata/homebuying",
+    source: "forced-test-item",
+    lastCheckedAt: `${today} 00:00:00 KST`
+  };
+  return {
+    items: [forced, ...items.filter((item) => item.id !== forced.id)],
+    logs: [...logs, "ALERT_TEST_FORCE_ITEM=1 - 7일 후 테스트 일정 1건 추가"]
+  };
+}
+
 async function writePayload(payload) {
   const text = `${JSON.stringify(payload, null, 2)}\n`;
   await fs.writeFile(PUBLIC_DATA_PATH, text, "utf-8");
@@ -99,21 +129,24 @@ async function main() {
   const validScraped = scraped.filter(validateItem);
 
   if (validScraped.length) {
-    const payload = toPayload(validScraped, [...logs, "공식 사이트 파싱 데이터 사용"]);
+    const maybeForced = withForcedTestItem(validScraped, [...logs, "공식 사이트 파싱 데이터 사용"]);
+    const payload = toPayload(maybeForced.items, maybeForced.logs);
     await writePayload(payload);
-    console.log(`[data] success: ${validScraped.length} items`);
+    console.log(`[data] success: ${payload.itemCount} items`);
     return;
   }
 
   if (existing.length) {
-    const payload = toPayload(existing, [...logs, "공식 파싱 데이터가 없어 기존 데이터 유지"]);
+    const maybeForced = withForcedTestItem(existing, [...logs, "공식 파싱 데이터가 없어 기존 데이터 유지"]);
+    const payload = toPayload(maybeForced.items, maybeForced.logs);
     await writePayload(payload);
     console.warn("[data] fallback: kept existing listings");
     return;
   }
 
   const seeded = buildFallbackSeed();
-  const payload = toPayload(seeded, [...logs, "공식 파싱/기존 데이터 없음 - 초기 샘플 데이터 사용"]);
+  const maybeForced = withForcedTestItem(seeded, [...logs, "공식 파싱/기존 데이터 없음 - 초기 샘플 데이터 사용"]);
+  const payload = toPayload(maybeForced.items, maybeForced.logs);
   await writePayload(payload);
   console.warn("[data] fallback: seeded sample data");
 }
