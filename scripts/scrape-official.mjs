@@ -49,10 +49,11 @@ const LH_BOARD_SOURCES = [
     source: "https://apply.lh.or.kr",
     parser: "lh-board",
     supplyType: "임대주택 공고",
-    listUrl: "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026",
-    pageUrls: [
-      "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026"
-    ],
+    listUrl: `https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=`,
+    pageUrls: Array.from({ length: 8 }, (_, index) => {
+      const page = index + 1;
+      return `https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=&currPage=${page}`;
+    }),
     mi: "1026"
   },
   {
@@ -60,10 +61,11 @@ const LH_BOARD_SOURCES = [
     source: "https://apply.lh.or.kr",
     parser: "lh-board",
     supplyType: "분양주택 공고",
-    listUrl: "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027",
-    pageUrls: [
-      "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027"
-    ],
+    listUrl: `https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=`,
+    pageUrls: Array.from({ length: 8 }, (_, index) => {
+      const page = index + 1;
+      return `https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=&currPage=${page}`;
+    }),
     mi: "1027"
   }
 ];
@@ -406,14 +408,24 @@ async function scrapeSource(sourceMeta) {
       } else {
         emptyStreak = 0;
       }
-      if ((sourceMeta.parser === "applyhome-list" || sourceMeta.parser === "sh-board") && emptyStreak >= 2) {
+      if (
+        (sourceMeta.parser === "applyhome-list" ||
+          sourceMeta.parser === "sh-board" ||
+          sourceMeta.parser === "lh-board") &&
+        emptyStreak >= 2
+      ) {
         pageLogs.push("early-stop:empty-streak");
         break;
       }
     } catch (e) {
       pageLogs.push(`fail:${e.message}`);
       emptyStreak += 1;
-      if ((sourceMeta.parser === "applyhome-list" || sourceMeta.parser === "sh-board") && emptyStreak >= 2) {
+      if (
+        (sourceMeta.parser === "applyhome-list" ||
+          sourceMeta.parser === "sh-board" ||
+          sourceMeta.parser === "lh-board") &&
+        emptyStreak >= 2
+      ) {
         pageLogs.push("early-stop:error-streak");
         break;
       }
