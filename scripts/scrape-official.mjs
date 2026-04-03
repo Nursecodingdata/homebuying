@@ -70,6 +70,19 @@ const LH_BOARD_SOURCES = [
   }
 ];
 
+const LH_PRE_BOARD_SOURCE = {
+  provider: "LH사전청약-모집공고문",
+  source: "https://apply.lh.or.kr",
+  parser: "lh-pre-board",
+  supplyType: "사전청약 모집공고문",
+  listUrl: `https://apply.lh.or.kr/lhapply/apply/bfh/slpa/list.do?mi=1349&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=`,
+  pageUrls: Array.from({ length: 8 }, (_, index) => {
+    const page = index + 1;
+    return `https://apply.lh.or.kr/lhapply/apply/bfh/slpa/list.do?mi=1349&viewType=srch&startDt=${TARGET_YEAR}-01-01&endDt=${TARGET_YEAR}-12-31&panNm=&currPage=${page}`;
+  }),
+  mi: "1349"
+};
+
 const SOURCES = [
   {
     provider: "청약홈-APT",
@@ -112,7 +125,8 @@ const SOURCES = [
       return `https://www.i-sh.co.kr/app/lay2/program/S48T561C563/www/brd/${cfg.boardPath}/list.do?multi_itm_seq=${cfg.multiItmSeq}&page=${page}`;
     })
   })),
-  ...LH_BOARD_SOURCES
+  ...LH_BOARD_SOURCES,
+  LH_PRE_BOARD_SOURCE
 ];
 
 function stripTagsAndScripts(html) {
@@ -366,6 +380,65 @@ function parseLhBoardItems(html, sourceMeta) {
   return items;
 }
 
+function parseLhPreBoardItems(html, sourceMeta) {
+  const tbodyMatch = html.match(/<tbody>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) return [];
+  const rows = tbodyMatch[1].match(/<tr>[\s\S]*?<\/tr>/gi) || [];
+  const now = nowKstDate();
+  const items = [];
+
+  for (const row of rows) {
+    if (/class="no_data"/i.test(row)) continue;
+    const cols = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) =>
+      cleanText(stripTagsOnly(m[1]))
+    );
+    if (cols.length < 6) continue;
+
+    const titleCellHtml =
+      (row.match(/<td[^>]*class="[^"]*bbs_tit[^"]*"[^>]*>([\s\S]*?)<\/td>/i) || [])[1] || "";
+    let title = cleanText(stripTagsOnly(titleCellHtml));
+    title = sanitizeLhTitle(title);
+    if (!title) continue;
+
+    const region = resolveCoreRegion("", title);
+    if (!region) continue;
+
+    const postedDate = normalizeDate(cols[4] || "");
+    const closeDate = normalizeDate(cols[5] || "") || postedDate;
+    if (!postedDate) continue;
+    if (!postedDate.startsWith(`${TARGET_YEAR}`) && !String(closeDate || "").startsWith(`${TARGET_YEAR}`)) {
+      continue;
+    }
+
+    const linkMatch = row.match(
+      /class="slpaInfoBtn"[^>]*data-id1="([^"]+)"[^>]*data-id2="([^"]+)"[^>]*data-id3="([^"]*)"/
+    );
+    let announcementUrl = sourceMeta.listUrl;
+    if (linkMatch) {
+      const [, panId, aisTpCd, otxtPanId] = linkMatch;
+      announcementUrl = `https://apply.lh.or.kr/lhapply/apply/bfh/slpa/slpaInfo.do?panId=${panId}&aisTpCd=${aisTpCd}&otxtPanId=${otxtPanId || ""}&mi=${sourceMeta.mi || ""}`;
+    }
+
+    const id = buildItemId(title, postedDate, region, sourceMeta.provider);
+    const item = {
+      id,
+      name: title,
+      region,
+      subregion: region,
+      provider: sourceMeta.provider,
+      supplyType: cols[1] || sourceMeta.supplyType,
+      applicationStartDate: postedDate,
+      applicationEndDate: closeDate,
+      announcementUrl,
+      source: sourceMeta.source,
+      lastCheckedAt: `${now} 00:00:00 KST`
+    };
+    if (validateItem(item)) items.push(item);
+  }
+
+  return items;
+}
+
 async function scrapePage(url, sourceMeta) {
   const response = await fetch(url, {
     headers: {
@@ -385,6 +458,9 @@ async function scrapePage(url, sourceMeta) {
   }
   if (sourceMeta.parser === "lh-board") {
     return parseLhBoardItems(html, sourceMeta);
+  }
+  if (sourceMeta.parser === "lh-pre-board") {
+    return parseLhPreBoardItems(html, sourceMeta);
   }
 
   const plain = stripTagsAndScripts(html)
@@ -411,7 +487,8 @@ async function scrapeSource(sourceMeta) {
       if (
         (sourceMeta.parser === "applyhome-list" ||
           sourceMeta.parser === "sh-board" ||
-          sourceMeta.parser === "lh-board") &&
+          sourceMeta.parser === "lh-board" ||
+          sourceMeta.parser === "lh-pre-board") &&
         emptyStreak >= 2
       ) {
         pageLogs.push("early-stop:empty-streak");
@@ -423,7 +500,8 @@ async function scrapeSource(sourceMeta) {
       if (
         (sourceMeta.parser === "applyhome-list" ||
           sourceMeta.parser === "sh-board" ||
-          sourceMeta.parser === "lh-board") &&
+          sourceMeta.parser === "lh-board" ||
+          sourceMeta.parser === "lh-pre-board") &&
         emptyStreak >= 2
       ) {
         pageLogs.push("early-stop:error-streak");

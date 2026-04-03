@@ -16,7 +16,7 @@ const BUNYANG_ALIMI_DATA_PATH = path.join(ROOT, "data", "bunyang-alimi-listings.
 const TARGET_YEAR = String(process.env.TARGET_YEAR || "2026");
 const TARGET_REGIONS = new Set(["과천", "분당", "서울"]);
 const SALE_ONLY_INCLUDE_REGEX =
-  /(주택분양|분양주택|공공분양|민간분양|신혼희망타운|APT\s*분양정보|아파트|APT)/i;
+  /(주택분양|분양주택|공공분양|민간분양|사전청약|신혼희망타운|APT\s*분양정보|아파트|APT)/i;
 const SALE_ONLY_EXCLUDE_REGEX =
   /(임대|오피스텔|생활숙박|생숙|도시형|토지|상가|공장|보도자료|당첨|발표|계약|공지|입찰|분양권|공급계획|잔여세대)/i;
 
