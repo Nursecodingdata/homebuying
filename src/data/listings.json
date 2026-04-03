@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-04-03 00:00:00 KST",
-  "itemCount": 9,
+  "itemCount": 11,
   "logs": [
     "청약홈-APT: 10건 파싱 (ok:3, ok:2, ok:2, ok:2, ok:0, ok:1, ok:0, ok:0, early-stop:empty-streak)",
     "청약홈-기타유형: 13건 파싱 (ok:6, ok:3, ok:1, ok:3, ok:0, ok:0, early-stop:empty-streak)",
@@ -12,6 +12,7 @@
     "LH청약플러스-임대: 8건 파싱 (ok:4, ok:3, ok:0, ok:1, ok:0, ok:0, early-stop:empty-streak)",
     "LH청약플러스-분양: 8건 파싱 (ok:4, ok:3, ok:0, ok:1, ok:0, ok:0, early-stop:empty-streak)",
     "LH사전청약-모집공고문: 0건 파싱 (ok:0, ok:0, early-stop:empty-streak)",
+    "LH청약캘린더-분양접수: 2건 파싱 (ok:2, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0, ok:0)",
     "수기 병합 건수=0",
     "외부 소스 병합 건수=0",
     "주택분양/분양주택 필터 적용 (INCLUDE=/(주택분양|분양주택|공공분양|민간분양|사전청약|신혼희망타운|APT\\s*분양정보|아파트|APT)/i, EXCLUDE=/(임대|오피스텔|생활숙박|생숙|도시형|토지|상가|공장|보도자료|당첨|발표|계약|공지|입찰|분양권|공급계획|잔여세대)/i)",
@@ -23,6 +24,32 @@
     "https://apply.lh.or.kr"
   ],
   "items": [
+    {
+      "id": "과천주암c1블록신혼희망타운공공분양입주자모집공고-20260112-과천-lh청약캘린더분양접수",
+      "name": "과천주암 C1블록 신혼희망타운(공공분양) 입주자모집공고",
+      "region": "과천",
+      "subregion": "과천시",
+      "provider": "LH청약캘린더-분양접수",
+      "supplyType": "분양주택 접수",
+      "applicationStartDate": "2026-01-12",
+      "applicationEndDate": "2026-01-15",
+      "announcementUrl": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=0000061040&ccrCnntSysDsCd=02&uppAisTpCd=39&aisTpCd=39&mi=1027",
+      "source": "https://apply.lh.or.kr",
+      "lastCheckedAt": "2026-04-03 00:00:00 KST"
+    },
+    {
+      "id": "과천주암c1블록공공분양주택입주자모집공고-20260112-과천-lh청약캘린더분양접수",
+      "name": "과천주암 C1블록 공공분양주택 입주자모집공고",
+      "region": "과천",
+      "subregion": "과천시",
+      "provider": "LH청약캘린더-분양접수",
+      "supplyType": "분양주택 접수",
+      "applicationStartDate": "2026-01-12",
+      "applicationEndDate": "2026-01-15",
+      "announcementUrl": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=0000061034&ccrCnntSysDsCd=02&uppAisTpCd=05&aisTpCd=05&mi=1027",
+      "source": "https://apply.lh.or.kr",
+      "lastCheckedAt": "2026-04-03 00:00:00 KST"
+    },
     {
       "id": "드파인연희-20260119-서울-청약홈apt",
       "name": "드파인 연희",

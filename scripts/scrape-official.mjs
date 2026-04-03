@@ -83,6 +83,18 @@ const LH_PRE_BOARD_SOURCE = {
   mi: "1349"
 };
 
+const LH_CALENDAR_SOURCE = {
+  provider: "LH청약캘린더-분양접수",
+  source: "https://apply.lh.or.kr",
+  parser: "lh-calendar",
+  supplyType: "분양주택 접수",
+  listUrl: "https://apply.lh.or.kr/lhapply/apply/sc/list.do?mi=1312",
+  pageUrls: Array.from({ length: 12 }, (_, index) => {
+    const month = String(index + 1).padStart(2, "0");
+    return `https://apply.lh.or.kr/lhapply/apply/sc/list.do?mi=1312&selectYear=${TARGET_YEAR}&selectMonth=${month}&calSrchType=02&srchPanSs=%EC%A0%91%EC%88%98`;
+  })
+};
+
 const SOURCES = [
   {
     provider: "청약홈-APT",
@@ -126,7 +138,8 @@ const SOURCES = [
     })
   })),
   ...LH_BOARD_SOURCES,
-  LH_PRE_BOARD_SOURCE
+  LH_PRE_BOARD_SOURCE,
+  LH_CALENDAR_SOURCE
 ];
 
 function stripTagsAndScripts(html) {
@@ -439,6 +452,73 @@ function parseLhPreBoardItems(html, sourceMeta) {
   return items;
 }
 
+function parseDateId(raw) {
+  const m = String(raw || "").match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
+function parseLhCalendarItems(html, sourceMeta) {
+  const now = nowKstDate();
+  const groups = new Map();
+  const dayCells = [...html.matchAll(/<td[^>]*id="(\d{8})"[^>]*>([\s\S]*?)<\/td>/gi)];
+
+  for (const cell of dayCells) {
+    const date = parseDateId(cell[1]);
+    if (!date || !date.startsWith(`${TARGET_YEAR}`)) continue;
+    const cellHtml = cell[2];
+    const links = [...cellHtml.matchAll(/<li>\s*<a href="([^"]+)"[^>]*class="([^"]*)"[^>]*>([\s\S]*?)<\/a>\s*<\/li>/gi)];
+    for (const link of links) {
+      const href = link[1] || "";
+      const cssClass = link[2] || "";
+      if (!/ing/.test(cssClass)) continue;
+      const rawTitle = cleanText(stripTagsOnly(link[3] || ""));
+      const title = rawTitle.replace(/^접수\s*/, "").trim();
+      if (!title) continue;
+      const region = resolveCoreRegion("", title);
+      if (!region) continue;
+      const announcementUrl = href.startsWith("http")
+        ? href
+        : `https://apply.lh.or.kr${href.startsWith("/") ? "" : "/"}${href}`;
+      const key = [title, announcementUrl, region, sourceMeta.provider].join("|");
+      const previous = groups.get(key);
+      if (!previous) {
+        groups.set(key, {
+          title,
+          region,
+          announcementUrl,
+          start: date,
+          end: date
+        });
+      } else {
+        if (date < previous.start) previous.start = date;
+        if (date > previous.end) previous.end = date;
+      }
+    }
+  }
+
+  const items = [];
+  for (const value of groups.values()) {
+    const id = buildItemId(value.title, value.start, value.region, sourceMeta.provider);
+    const item = {
+      id,
+      name: value.title,
+      region: value.region,
+      subregion: value.region,
+      provider: sourceMeta.provider,
+      supplyType: sourceMeta.supplyType,
+      applicationStartDate: value.start,
+      applicationEndDate: value.end,
+      announcementUrl: value.announcementUrl,
+      source: sourceMeta.source,
+      lastCheckedAt: `${now} 00:00:00 KST`
+    };
+    if (validateItem(item)) items.push(item);
+  }
+
+  return items;
+}
+
 async function scrapePage(url, sourceMeta) {
   const response = await fetch(url, {
     headers: {
@@ -461,6 +541,9 @@ async function scrapePage(url, sourceMeta) {
   }
   if (sourceMeta.parser === "lh-pre-board") {
     return parseLhPreBoardItems(html, sourceMeta);
+  }
+  if (sourceMeta.parser === "lh-calendar") {
+    return parseLhCalendarItems(html, sourceMeta);
   }
 
   const plain = stripTagsAndScripts(html)
