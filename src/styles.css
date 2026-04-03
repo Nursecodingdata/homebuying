@@ -31,7 +31,7 @@ body {
 }
 
 .page {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 32px 20px 52px;
 }
@@ -165,7 +165,7 @@ h1 {
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1040px;
+  min-width: 1200px;
 }
 
 .schedule-table thead th {
@@ -175,17 +175,19 @@ h1 {
   background: #f3f4f6;
   color: #2b3a4d;
   font-size: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   text-align: left;
   border-bottom: 1px solid var(--border);
-  padding: 10px 12px;
+  padding: 12px 16px;
 }
 
 .schedule-table tbody td {
   border-bottom: 1px solid rgba(26, 40, 59, 0.08);
-  padding: 12px 12px;
+  padding: 14px 16px;
   vertical-align: middle;
   font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
   color: #1e2b3a;
 }
 
@@ -265,7 +267,7 @@ h1 {
 }
 
 .name-cell {
-  min-width: 320px;
+  min-width: 380px;
 }
 
 @keyframes slideUp {

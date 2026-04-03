@@ -54,6 +54,8 @@ export default function App() {
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
+  const [sources, setSources] = useState([]);
+  const [generatedAt, setGeneratedAt] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -66,6 +68,8 @@ export default function App() {
         }
         const payload = await response.json();
         setRecords(payload.items ?? []);
+        setSources(payload.sources ?? []);
+        setGeneratedAt(payload.generatedAt ?? "");
       } catch (e) {
         setError(e instanceof Error ? e.message : "알 수 없는 오류");
       } finally {
@@ -110,14 +114,13 @@ export default function App() {
   const regions = useMemo(() => ["전체", ...CORE_REGIONS], []);
 
   const meta = useMemo(() => {
-    if (!records.length) return { lastCheckedAt: "-", source: "-", generatedAt: "-" };
-    const first = records[0];
+    const fallbackSources = [...new Set(records.map((item) => item.source).filter(Boolean))];
+    const sourceList = sources.length ? sources : fallbackSources;
     return {
-      lastCheckedAt: first.lastCheckedAt ?? "-",
-      source: first.source ?? "-",
-      generatedAt: first.lastCheckedAt ?? "-"
+      lastCheckedAt: generatedAt || records[0]?.lastCheckedAt || "-",
+      sources: sourceList.length ? sourceList.join(", ") : "-"
     };
-  }, [records]);
+  }, [records, sources, generatedAt]);
 
   return (
     <div className="page">
@@ -169,7 +172,7 @@ export default function App() {
 
       <section className="meta">
         <span>전체 건수: {filtered.length}건</span>
-        <span>데이터 출처: {meta.source}</span>
+        <span>데이터 출처: {meta.sources}</span>
         <span>마지막 갱신: {meta.lastCheckedAt}</span>
       </section>
 

@@ -16,9 +16,8 @@ const BUNYANG_ALIMI_DATA_PATH = path.join(ROOT, "data", "bunyang-alimi-listings.
 const TARGET_YEAR = String(process.env.TARGET_YEAR || "2026");
 const TARGET_REGIONS = new Set(["과천", "분당", "서울"]);
 const CHEONGYAK_REGEX =
-  /(청약|특별공급|1순위|2순위|무순위|임의공급|사전청약|청약접수|접수)/;
-const EXCLUDE_REGEX =
-  /(토지|상가|공장|보도자료|당첨|발표|계약|공지|공고|입찰|분양권|공급계획)/;
+  /(청약|특별공급|1순위|2순위|무순위|임의공급|사전청약|청약접수|접수|모집|입주자|분양|임대)/;
+const EXCLUDE_REGEX = /(토지|상가|공장|보도자료|당첨|발표|계약|공지|입찰|분양권|공급계획)/;
 
 async function ensureDir() {
   await fs.mkdir(path.dirname(PUBLIC_DATA_PATH), { recursive: true });
@@ -141,12 +140,13 @@ function dedupeById(items) {
   return output;
 }
 
-function toPayload(items, logs) {
+function toPayload(items, logs, sources) {
   const now = nowKstDate();
   return {
     generatedAt: `${now} 00:00:00 KST`,
     itemCount: items.length,
     logs,
+    sources: sources ? Array.from(new Set(sources)) : [],
     items: items.sort(
       (a, b) => new Date(`${a.applicationStartDate}T00:00:00+09:00`) - new Date(`${b.applicationStartDate}T00:00:00+09:00`)
     )
@@ -201,10 +201,16 @@ async function main() {
   const extras = keepCheongyakOnly(
     keepTargetRegions(keepTargetYear(await readExtraSourceData())).filter(validateItem)
   );
-  const { items: scraped, logs } = await scrapeOfficialListings();
+  const { items: scraped, logs, sources: officialSources } = await scrapeOfficialListings();
   const validScraped = keepCheongyakOnly(
     keepTargetRegions(keepTargetYear(scraped.filter(validateItem)))
   );
+  const mergedSources = [
+    ...(officialSources || []),
+    ...existing.map((item) => item.source),
+    ...manual.map((item) => item.source),
+    ...extras.map((item) => item.source)
+  ].filter(Boolean);
 
   if (validScraped.length) {
     const merged = dedupeById([...validScraped, ...manual, ...extras, ...existing]);
@@ -217,7 +223,7 @@ async function main() {
         ...TARGET_REGIONS
       ].join("/")})`
     ]);
-    const payload = toPayload(maybeForced.items, maybeForced.logs);
+    const payload = toPayload(maybeForced.items, maybeForced.logs, mergedSources);
     await writePayload(payload);
     console.log(`[data] success: ${payload.itemCount} items`);
     return;
@@ -234,7 +240,7 @@ async function main() {
         ...TARGET_REGIONS
       ].join("/")})`
     ]);
-    const payload = toPayload(maybeForced.items, maybeForced.logs);
+    const payload = toPayload(maybeForced.items, maybeForced.logs, mergedSources);
     await writePayload(payload);
     console.warn("[data] fallback: kept existing listings");
     return;
@@ -247,7 +253,7 @@ async function main() {
       ...TARGET_REGIONS
     ].join("/")})`
   ]);
-  const payload = toPayload(maybeForced.items, maybeForced.logs);
+  const payload = toPayload(maybeForced.items, maybeForced.logs, mergedSources);
   await writePayload(payload);
   console.warn("[data] fallback: seeded sample data");
 }

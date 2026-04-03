@@ -2,19 +2,24 @@
   "generatedAt": "2026-04-03 00:00:00 KST",
   "itemCount": 42,
   "logs": [
-    "청약홈-APT: 10건 파싱 (ok:3, ok:2, ok:2, ok:2, ok:0, ok:1, ok:0, ok:0, early-stop:empty-streak)",
-    "청약홈-기타유형: 13건 파싱 (ok:6, ok:3, ok:1, ok:3, ok:0, ok:0, early-stop:empty-streak)",
-    "청약홈-APT잔여세대: 15건 파싱 (ok:1, ok:2, ok:2, ok:1, ok:2, ok:3, ok:0, ok:1, ok:0, ok:2, ok:0, ok:1)",
-    "SH공사-주택분양: 8건 파싱 (ok:8, ok:0, ok:0, early-stop:empty-streak)",
-    "SH공사-주택임대: 100건 파싱 (ok:10, ok:10, ok:10, ok:10, ok:10, ok:10, ok:10, ok:10, ok:10, ok:10)",
-    "SH공사-토지: 7건 파싱 (ok:7, ok:0, ok:0, early-stop:empty-streak)",
-    "SH공사-상가/공장: 5건 파싱 (ok:5, ok:0, ok:0, early-stop:empty-streak)",
-    "LH청약센터: 0건 파싱 (ok:0)",
-    "마이홈: 0건 파싱 (fail:마이홈 응답 오류: 404)",
+    "청약홈-APT: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "청약홈-기타유형: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "청약홈-APT잔여세대: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "SH공사-주택분양: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "SH공사-주택임대: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "SH공사-토지: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "SH공사-상가/공장: 0건 파싱 (fail:fetch failed, fail:fetch failed, early-stop:error-streak)",
+    "LH청약플러스-임대: 0건 파싱 (fail:fetch failed)",
+    "LH청약플러스-분양: 0건 파싱 (fail:fetch failed)",
     "수기 병합 건수=0",
     "외부 소스 병합 건수=0",
-    "청약 필터 적용 (KEYWORD=/(청약|특별공급|1순위|2순위|무순위|임의공급|사전청약|청약접수|접수)/)",
-    "공식 사이트 파싱 + 기존 데이터 병합 (TARGET_YEAR=2026, TARGET_REGIONS=과천/분당/서울)"
+    "청약 필터 적용 (KEYWORD=/(청약|특별공급|1순위|2순위|무순위|임의공급|사전청약|청약접수|접수|모집|입주자|분양|임대)/)",
+    "공식 파싱 데이터가 없어 기존 데이터 유지 (TARGET_YEAR=2026, TARGET_REGIONS=과천/분당/서울)"
+  ],
+  "sources": [
+    "https://www.applyhome.co.kr",
+    "https://www.i-sh.co.kr",
+    "https://apply.lh.or.kr"
   ],
   "items": [
     {

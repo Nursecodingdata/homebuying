@@ -43,6 +43,31 @@ const SH_BOARD_SOURCES = [
   }
 ];
 
+const LH_BOARD_SOURCES = [
+  {
+    provider: "LH청약플러스-임대",
+    source: "https://apply.lh.or.kr",
+    parser: "lh-board",
+    supplyType: "임대주택 공고",
+    listUrl: "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026",
+    pageUrls: [
+      "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1026"
+    ],
+    mi: "1026"
+  },
+  {
+    provider: "LH청약플러스-분양",
+    source: "https://apply.lh.or.kr",
+    parser: "lh-board",
+    supplyType: "분양주택 공고",
+    listUrl: "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027",
+    pageUrls: [
+      "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?mi=1027"
+    ],
+    mi: "1027"
+  }
+];
+
 const SOURCES = [
   {
     provider: "청약홈-APT",
@@ -85,24 +110,7 @@ const SOURCES = [
       return `https://www.i-sh.co.kr/app/lay2/program/S48T561C563/www/brd/${cfg.boardPath}/list.do?multi_itm_seq=${cfg.multiItmSeq}&page=${page}`;
     })
   })),
-  {
-    provider: "LH청약센터",
-    source: "https://apply.lh.or.kr",
-    parser: "generic",
-    supplyType: "공공분양 청약",
-    pageUrls: [
-      "https://apply.lh.or.kr/lhapply/apply/wrtanc/selectWrtancList.do"
-    ]
-  },
-  {
-    provider: "마이홈",
-    source: "https://www.myhome.go.kr",
-    parser: "generic",
-    supplyType: "청약 접수",
-    pageUrls: [
-      "https://www.myhome.go.kr/hws/portal/schd/schd/selectRsdtRcritNtcListView.do"
-    ]
-  }
+  ...LH_BOARD_SOURCES
 ];
 
 function stripTagsAndScripts(html) {
@@ -293,6 +301,69 @@ function parseApplyhomeListItems(html, sourceMeta) {
   return items;
 }
 
+function sanitizeLhTitle(title) {
+  return title.replace(/\s*\d+일전$/g, "").replace(/\s*new$/gi, "").trim();
+}
+
+function parseLhBoardItems(html, sourceMeta) {
+  const tbodyMatch = html.match(/<tbody>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) return [];
+  const rows = tbodyMatch[1].match(/<tr>[\s\S]*?<\/tr>/gi) || [];
+  const now = nowKstDate();
+  const items = [];
+
+  for (const row of rows) {
+    const cols = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) =>
+      cleanText(stripTagsOnly(m[1]))
+    );
+    if (cols.length < 7) continue;
+
+    const titleCellHtml =
+      (row.match(/<td[^>]*class="[^"]*bbs_tit[^"]*"[^>]*>([\s\S]*?)<\/td>/i) || [])[1] || "";
+    let title = cleanText(stripTagsOnly(titleCellHtml));
+    title = sanitizeLhTitle(title);
+    if (!title) continue;
+
+    const regionCell = cols[3] || "";
+    const region = resolveCoreRegion(regionCell, title);
+    if (!region) continue;
+
+    const postedDate = normalizeDate(cols[5] || "");
+    const closeDate = normalizeDate(cols[6] || "") || postedDate;
+    if (!postedDate) continue;
+    if (!postedDate.startsWith(`${TARGET_YEAR}`) && !String(closeDate || "").startsWith(`${TARGET_YEAR}`)) {
+      continue;
+    }
+
+    const linkMatch = row.match(
+      /class="wrtancInfoBtn"[^>]*data-id1="([^"]+)"[^>]*data-id2="([^"]+)"[^>]*data-id3="([^"]+)"[^>]*data-id4="([^"]+)"/
+    );
+    let announcementUrl = sourceMeta.listUrl;
+    if (linkMatch) {
+      const [, panId, ccrCnntSysDsCd, uppAisTpCd, aisTpCd] = linkMatch;
+      announcementUrl = `https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=${panId}&ccrCnntSysDsCd=${ccrCnntSysDsCd}&uppAisTpCd=${uppAisTpCd}&aisTpCd=${aisTpCd}&mi=${sourceMeta.mi || ""}`;
+    }
+
+    const id = buildItemId(title, postedDate, region, sourceMeta.provider);
+    const item = {
+      id,
+      name: title,
+      region,
+      subregion: region,
+      provider: sourceMeta.provider,
+      supplyType: cols[1] || sourceMeta.supplyType,
+      applicationStartDate: postedDate,
+      applicationEndDate: closeDate,
+      announcementUrl,
+      source: sourceMeta.source,
+      lastCheckedAt: `${now} 00:00:00 KST`
+    };
+    if (validateItem(item)) items.push(item);
+  }
+
+  return items;
+}
+
 async function scrapePage(url, sourceMeta) {
   const response = await fetch(url, {
     headers: {
@@ -309,6 +380,9 @@ async function scrapePage(url, sourceMeta) {
   }
   if (sourceMeta.parser === "applyhome-list") {
     return parseApplyhomeListItems(html, sourceMeta);
+  }
+  if (sourceMeta.parser === "lh-board") {
+    return parseLhBoardItems(html, sourceMeta);
   }
 
   const plain = stripTagsAndScripts(html)
@@ -348,6 +422,8 @@ async function scrapeSource(sourceMeta) {
   return { items: all, pageLogs };
 }
 
+const OFFICIAL_SOURCE_LIST = [...new Set(SOURCES.map((source) => source.source))];
+
 export async function scrapeOfficialListings() {
   const all = [];
   const logs = [];
@@ -370,5 +446,5 @@ export async function scrapeOfficialListings() {
     deduped.push(item);
   }
 
-  return { items: deduped, logs };
+  return { items: deduped, logs, sources: OFFICIAL_SOURCE_LIST };
 }
