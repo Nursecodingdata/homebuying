@@ -10,8 +10,15 @@ const ROOT = path.resolve(__dirname, "..");
 const PUBLIC_DATA_PATH = path.join(ROOT, "public", "data", "listings.json");
 const SRC_DATA_PATH = path.join(ROOT, "src", "data", "listings.json");
 const MANUAL_DATA_PATH = path.join(ROOT, "data", "manual-listings.json");
+const R114_DATA_PATH = path.join(ROOT, "data", "r114-listings.json");
+const HOGANGNONO_DATA_PATH = path.join(ROOT, "data", "hogangnono-listings.json");
+const BUNYANG_ALIMI_DATA_PATH = path.join(ROOT, "data", "bunyang-alimi-listings.json");
 const TARGET_YEAR = String(process.env.TARGET_YEAR || "2026");
 const TARGET_REGIONS = new Set(["과천", "분당", "서울"]);
+const CHEONGYAK_REGEX =
+  /(청약|특별공급|1순위|2순위|무순위|임의공급|사전청약|청약접수|접수)/;
+const EXCLUDE_REGEX =
+  /(토지|상가|공장|보도자료|당첨|발표|계약|공지|공고|입찰|분양권|공급계획)/;
 
 async function ensureDir() {
   await fs.mkdir(path.dirname(PUBLIC_DATA_PATH), { recursive: true });
@@ -36,6 +43,23 @@ async function readManualData() {
   } catch {
     return [];
   }
+}
+
+async function readExtraSourceData() {
+  const files = [R114_DATA_PATH, HOGANGNONO_DATA_PATH, BUNYANG_ALIMI_DATA_PATH];
+  const all = [];
+  for (const file of files) {
+    try {
+      const content = await fs.readFile(file, "utf-8");
+      const json = JSON.parse(content);
+      if (Array.isArray(json.items)) {
+        all.push(...json.items);
+      }
+    } catch {
+      continue;
+    }
+  }
+  return all;
 }
 
 function buildFallbackSeed() {
@@ -95,6 +119,15 @@ function keepTargetYear(items) {
 
 function keepTargetRegions(items) {
   return items.filter((item) => TARGET_REGIONS.has(item.region));
+}
+
+function keepCheongyakOnly(items) {
+  return items.filter((item) => {
+    const text = `${item.name} ${item.supplyType} ${item.provider}`.trim();
+    if (!CHEONGYAK_REGEX.test(text)) return false;
+    if (EXCLUDE_REGEX.test(text) && !/청약/.test(text)) return false;
+    return true;
+  });
 }
 
 function dedupeById(items) {
@@ -159,16 +192,27 @@ async function writePayload(payload) {
 async function main() {
   await ensureDir();
 
-  const existing = keepTargetRegions(keepTargetYear(await readExistingData()));
-  const manual = keepTargetRegions(keepTargetYear(await readManualData())).filter(validateItem);
+  const existing = keepCheongyakOnly(
+    keepTargetRegions(keepTargetYear(await readExistingData()))
+  );
+  const manual = keepCheongyakOnly(
+    keepTargetRegions(keepTargetYear(await readManualData())).filter(validateItem)
+  );
+  const extras = keepCheongyakOnly(
+    keepTargetRegions(keepTargetYear(await readExtraSourceData())).filter(validateItem)
+  );
   const { items: scraped, logs } = await scrapeOfficialListings();
-  const validScraped = keepTargetRegions(keepTargetYear(scraped.filter(validateItem)));
+  const validScraped = keepCheongyakOnly(
+    keepTargetRegions(keepTargetYear(scraped.filter(validateItem)))
+  );
 
   if (validScraped.length) {
-    const merged = dedupeById([...validScraped, ...manual, ...existing]);
+    const merged = dedupeById([...validScraped, ...manual, ...extras, ...existing]);
     const maybeForced = withForcedTestItem(merged, [
       ...logs,
       `수기 병합 건수=${manual.length}`,
+      `외부 소스 병합 건수=${extras.length}`,
+      `청약 필터 적용 (KEYWORD=${CHEONGYAK_REGEX})`,
       `공식 사이트 파싱 + 기존 데이터 병합 (TARGET_YEAR=${TARGET_YEAR}, TARGET_REGIONS=${[
         ...TARGET_REGIONS
       ].join("/")})`
@@ -179,11 +223,13 @@ async function main() {
     return;
   }
 
-  if (existing.length || manual.length) {
-    const merged = dedupeById([...manual, ...existing]);
+  if (existing.length || manual.length || extras.length) {
+    const merged = dedupeById([...manual, ...extras, ...existing]);
     const maybeForced = withForcedTestItem(merged, [
       ...logs,
       `수기 병합 건수=${manual.length}`,
+      `외부 소스 병합 건수=${extras.length}`,
+      `청약 필터 적용 (KEYWORD=${CHEONGYAK_REGEX})`,
       `공식 파싱 데이터가 없어 기존 데이터 유지 (TARGET_YEAR=${TARGET_YEAR}, TARGET_REGIONS=${[
         ...TARGET_REGIONS
       ].join("/")})`

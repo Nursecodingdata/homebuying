@@ -98,6 +98,39 @@ h1 {
   border-color: var(--accent-main);
 }
 
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.table-search input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  min-width: 220px;
+  background: #fff;
+}
+
+.table-count {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
 .meta {
   display: flex;
   justify-content: flex-start;
@@ -125,33 +158,32 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: auto;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 10px 22px rgba(40, 54, 80, 0.09);
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(40, 54, 80, 0.08);
 }
 
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px;
+  min-width: 1040px;
 }
 
 .schedule-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #eff3fb;
+  background: #f3f4f6;
   color: #2b3a4d;
   font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   text-align: left;
   border-bottom: 1px solid var(--border);
   padding: 10px 12px;
 }
 
 .schedule-table tbody td {
-  border-bottom: 1px solid rgba(26, 40, 59, 0.1);
-  padding: 10px 12px;
+  border-bottom: 1px solid rgba(26, 40, 59, 0.08);
+  padding: 12px 12px;
   vertical-align: middle;
   font-size: 14px;
   color: #1e2b3a;
@@ -162,37 +194,50 @@ h1 {
 }
 
 .schedule-table tbody tr:hover {
-  background: rgba(201, 223, 255, 0.28);
+  background: rgba(219, 232, 255, 0.35);
 }
 
-.badge {
-  display: inline-block;
+.col-check {
+  width: 34px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   border-radius: 999px;
-  padding: 5px 9px;
+  padding: 4px 10px;
   border: 1px solid transparent;
 }
 
-.badge.urgent {
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.status-pill.urgent {
   color: #8f4305;
   background: rgba(255, 214, 174, 0.58);
   border-color: rgba(217, 109, 27, 0.35);
 }
 
-.badge.upcoming {
+.status-pill.upcoming {
   color: #47586b;
   background: rgba(213, 222, 232, 0.54);
   border-color: rgba(75, 96, 120, 0.28);
 }
 
-.badge.open {
+.status-pill.open {
   color: #0b4aa8;
   background: rgba(186, 216, 255, 0.6);
   border-color: rgba(31, 111, 235, 0.34);
 }
 
-.badge.closed {
+.status-pill.closed {
   color: #5f666f;
   background: rgba(220, 225, 230, 0.55);
   border-color: rgba(98, 108, 122, 0.24);

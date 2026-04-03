@@ -52,6 +52,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState("전체");
   const [status, setStatus] = useState("all");
+  const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -92,8 +93,18 @@ export default function App() {
       hydrated
         .filter((item) => (region === "전체" ? true : item.region === region))
         .filter((item) => (status === "all" ? true : item.status === status))
+        .filter((item) => {
+          if (!query.trim()) return true;
+          const q = query.trim().toLowerCase();
+          return (
+            item.name.toLowerCase().includes(q) ||
+            item.region.toLowerCase().includes(q) ||
+            item.subregion.toLowerCase().includes(q) ||
+            item.provider.toLowerCase().includes(q)
+          );
+        })
         .sort((a, b) => toDate(a.applicationStartDate) - toDate(b.applicationStartDate)),
-    [hydrated, region, status]
+    [hydrated, region, status, query]
   );
 
   const regions = useMemo(() => ["전체", ...CORE_REGIONS], []);
@@ -143,6 +154,17 @@ export default function App() {
             </button>
           ))}
         </div>
+        <div className="table-toolbar">
+          <div className="table-search">
+            <span>검색</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="단지명, 지역, 기관"
+            />
+          </div>
+          <div className="table-count">표시: {filtered.length}건</div>
+        </div>
       </section>
 
       <section className="meta">
@@ -161,6 +183,9 @@ export default function App() {
         <table className="schedule-table">
           <thead>
             <tr>
+              <th className="col-check">
+                <input type="checkbox" aria-label="select all" disabled />
+              </th>
               <th>상태</th>
               <th>D-day</th>
               <th>지역</th>
@@ -176,8 +201,14 @@ export default function App() {
           <tbody>
             {filtered.map((item) => (
               <tr key={item.id}>
+                <td className="col-check">
+                  <input type="checkbox" aria-label={`select ${item.name}`} />
+                </td>
                 <td>
-                  <span className={`badge ${item.status}`}>{STATUS_LABELS[item.status]}</span>
+                  <span className={`status-pill ${item.status}`}>
+                    <span className="status-dot" />
+                    {STATUS_LABELS[item.status]}
+                  </span>
                 </td>
                 <td className="mono">{item.dday}</td>
                 <td>{item.region}</td>

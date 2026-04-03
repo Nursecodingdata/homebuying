@@ -44,6 +44,39 @@ const SH_BOARD_SOURCES = [
 ];
 
 const SOURCES = [
+  {
+    provider: "청약홈-APT",
+    source: "https://www.applyhome.co.kr",
+    parser: "applyhome-list",
+    supplyType: "APT 분양정보",
+    listUrl: "https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancListView.do",
+    pageUrls: Array.from({ length: 30 }, (_, index) => {
+      const page = index + 1;
+      return `https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancListView.do?beginPd=${TARGET_YEAR}01&endPd=${TARGET_YEAR}12&pageIndex=${page}`;
+    })
+  },
+  {
+    provider: "청약홈-기타유형",
+    source: "https://www.applyhome.co.kr",
+    parser: "applyhome-list",
+    supplyType: "오피스텔/생숙/도시형/민간임대",
+    listUrl: "https://www.applyhome.co.kr/ai/aia/selectOtherLttotPblancListView.do",
+    pageUrls: Array.from({ length: 20 }, (_, index) => {
+      const page = index + 1;
+      return `https://www.applyhome.co.kr/ai/aia/selectOtherLttotPblancListView.do?beginPd=${TARGET_YEAR}01&endPd=${TARGET_YEAR}12&pageIndex=${page}`;
+    })
+  },
+  {
+    provider: "청약홈-APT잔여세대",
+    source: "https://www.applyhome.co.kr",
+    parser: "applyhome-list",
+    supplyType: "APT 잔여세대",
+    listUrl: "https://www.applyhome.co.kr/ai/aia/selectAPTRemndrLttotPblancListView.do",
+    pageUrls: Array.from({ length: 12 }, (_, index) => {
+      const page = index + 1;
+      return `https://www.applyhome.co.kr/ai/aia/selectAPTRemndrLttotPblancListView.do?beginPd=${TARGET_YEAR}01&endPd=${TARGET_YEAR}12&pageIndex=${page}`;
+    })
+  },
   ...SH_BOARD_SOURCES.map((cfg) => ({
     ...cfg,
     parser: "sh-board",
@@ -191,6 +224,75 @@ function parseShBoardItems(html, sourceMeta) {
   return items;
 }
 
+function resolveCoreRegion(regionCell, title) {
+  if (/과천/.test(title) || /과천/.test(regionCell)) return "과천";
+  if (/(분당|성남시\s*분당구)/.test(title) || /(분당|성남시\s*분당구)/.test(regionCell)) return "분당";
+  if (/서울/.test(regionCell) || /서울/.test(title)) return "서울";
+  return null;
+}
+
+function parseDateRange(raw) {
+  const matches = [...raw.matchAll(/(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]);
+  if (!matches.length) return null;
+  if (matches.length === 1) return { start: matches[0], end: matches[0] };
+  return { start: matches[0], end: matches[1] };
+}
+
+function parseApplyhomeListItems(html, sourceMeta) {
+  const tbodyMatch = html.match(/<tbody>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) return [];
+  const rows = tbodyMatch[1].match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  const now = nowKstDate();
+  const items = [];
+
+  for (const row of rows) {
+    const cols = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) =>
+      cleanText(stripTagsOnly(m[1]))
+    );
+    if (cols.length < 8) continue;
+
+    const titleMatch = row.match(/class="txt_l_b"[^>]*><b>([\s\S]*?)<\/b>/i);
+    const title = cleanText(stripTagsOnly(titleMatch ? titleMatch[1] : cols[3] || ""));
+    if (!title) continue;
+
+    const regionCell = cols[0] || "";
+    const region = resolveCoreRegion(regionCell, title);
+    if (!region) continue;
+
+    const noticeDate = normalizeDate(cols[6] || "");
+    const period = parseDateRange(cols[7] || "");
+    const startDate = period?.start || noticeDate;
+    const endDate = period?.end || noticeDate;
+    if (!startDate || !endDate) continue;
+    if (!startDate.startsWith(`${TARGET_YEAR}`) && !endDate.startsWith(`${TARGET_YEAR}`)) continue;
+
+    const rowAttr = row.match(/data-pbno="(\d+)".*data-hmno="(\d+)"/);
+    const pbno = rowAttr ? rowAttr[1] : "";
+    const hmno = rowAttr ? rowAttr[2] : "";
+    const announcementUrl =
+      pbno && hmno
+        ? `${sourceMeta.listUrl}?pblancNo=${pbno}&houseManageNo=${hmno}`
+        : sourceMeta.listUrl;
+    const id = buildItemId(title, startDate, region, sourceMeta.provider);
+
+    const item = {
+      id,
+      name: title,
+      region,
+      subregion: region,
+      provider: sourceMeta.provider,
+      supplyType: cols[2] || sourceMeta.supplyType,
+      applicationStartDate: startDate,
+      applicationEndDate: endDate,
+      announcementUrl,
+      source: sourceMeta.source,
+      lastCheckedAt: `${now} 00:00:00 KST`
+    };
+    if (validateItem(item)) items.push(item);
+  }
+  return items;
+}
+
 async function scrapePage(url, sourceMeta) {
   const response = await fetch(url, {
     headers: {
@@ -205,6 +307,9 @@ async function scrapePage(url, sourceMeta) {
   if (sourceMeta.parser === "sh-board") {
     return parseShBoardItems(html, sourceMeta);
   }
+  if (sourceMeta.parser === "applyhome-list") {
+    return parseApplyhomeListItems(html, sourceMeta);
+  }
 
   const plain = stripTagsAndScripts(html)
     .replace(/\s+/g, " ")
@@ -216,13 +321,28 @@ async function scrapePage(url, sourceMeta) {
 async function scrapeSource(sourceMeta) {
   const all = [];
   const pageLogs = [];
+  let emptyStreak = 0;
   for (const pageUrl of sourceMeta.pageUrls) {
     try {
       const items = await scrapePage(pageUrl, sourceMeta);
       all.push(...items);
       pageLogs.push(`ok:${items.length}`);
+      if (items.length === 0) {
+        emptyStreak += 1;
+      } else {
+        emptyStreak = 0;
+      }
+      if ((sourceMeta.parser === "applyhome-list" || sourceMeta.parser === "sh-board") && emptyStreak >= 2) {
+        pageLogs.push("early-stop:empty-streak");
+        break;
+      }
     } catch (e) {
       pageLogs.push(`fail:${e.message}`);
+      emptyStreak += 1;
+      if ((sourceMeta.parser === "applyhome-list" || sourceMeta.parser === "sh-board") && emptyStreak >= 2) {
+        pageLogs.push("early-stop:error-streak");
+        break;
+      }
     }
   }
   return { items: all, pageLogs };

@@ -43,6 +43,13 @@ npm run dev
 
 공식 파싱으로 누락되는 일정은 `data/manual-listings.json`의 `items` 배열에 동일 스키마로 추가하면 빌드 시 자동 병합됩니다.
 
+추가 외부 소스 병합 파일:
+- `data/r114-listings.json`
+- `data/hogangnono-listings.json`
+- `data/bunyang-alimi-listings.json`
+
+위 파일들도 동일 스키마의 `items` 배열로 넣으면 자동 병합됩니다.
+
 ## 참고
 
 공식 사이트 구조 변경 시 파서 정확도가 떨어질 수 있습니다. 파싱 결과가 없으면 기존 데이터 또는 초기 샘플 데이터를 유지하도록 설계했습니다.
