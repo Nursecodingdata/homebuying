@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "data:build": "node scripts/build-data.mjs",
     "alerts:send": "node scripts/send-alerts.mjs",
+    "calendar:sync": "node scripts/send-google-calendar.mjs",
     "check:data": "node scripts/check-data.mjs",
     "check:alerts": "node scripts/check-alert-logic.mjs",
     "test": "npm run check:data && npm run check:alerts"
