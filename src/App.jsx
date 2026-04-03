@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
-const CORE_REGIONS = ["과천", "분당", "서울"];
+const REGION_TABS = ["전체", "서울", "과천", "분당"];
 const STATUS_LABELS = {
   all: "전체",
+  open: "진행중",
   urgent: "임박",
   upcoming: "예정",
-  open: "진행중",
   closed: "마감"
 };
+const STATUS_TABS = ["all", "open", "urgent", "upcoming", "closed"];
 
 function toDate(value) {
   return new Date(`${value}T00:00:00+09:00`);
@@ -111,7 +112,7 @@ export default function App() {
     [hydrated, region, status, query]
   );
 
-  const regions = useMemo(() => ["전체", ...CORE_REGIONS], []);
+  const regions = useMemo(() => REGION_TABS, []);
 
   const meta = useMemo(() => {
     const fallbackSources = [...new Set(records.map((item) => item.source).filter(Boolean))];
@@ -126,7 +127,7 @@ export default function App() {
     <div className="page">
       <header className="hero">
         <p className="eyebrow">KOREA HOUSING APPLICATION WATCH</p>
-        <h1>2026년 과천 · 분당 · 서울 청약 일정 테이블</h1>
+        <h1>수도권 분양일정 테이블</h1>
         <p className="description">
           종료된 일정까지 포함해 <strong>컬럼형 테이블</strong>로 전체 일정을 보여줍니다.
         </p>
@@ -146,14 +147,14 @@ export default function App() {
           ))}
         </div>
         <div className="chip-row">
-          {Object.entries(STATUS_LABELS).map(([key, label]) => (
+          {STATUS_TABS.map((key) => (
             <button
               key={key}
               className={`chip secondary ${status === key ? "active" : ""}`}
               onClick={() => setStatus(key)}
               type="button"
             >
-              {label}
+              {STATUS_LABELS[key]}
             </button>
           ))}
         </div>

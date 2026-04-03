@@ -31,9 +31,9 @@ body {
 }
 
 .page {
-  max-width: 1200px;
+  max-width: 1680px;
   margin: 0 auto;
-  padding: 32px 20px 52px;
+  padding: 28px 16px 44px;
 }
 
 .hero {
@@ -165,7 +165,7 @@ h1 {
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1200px;
+  min-width: 1560px;
 }
 
 .schedule-table thead th {
@@ -178,12 +178,12 @@ h1 {
   letter-spacing: 0.05em;
   text-align: left;
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  padding: 12px 18px;
 }
 
 .schedule-table tbody td {
   border-bottom: 1px solid rgba(26, 40, 59, 0.08);
-  padding: 14px 16px;
+  padding: 14px 18px;
   vertical-align: middle;
   font-size: 14px;
   line-height: 1.55;
@@ -267,7 +267,7 @@ h1 {
 }
 
 .name-cell {
-  min-width: 380px;
+  min-width: 520px;
 }
 
 @keyframes slideUp {
