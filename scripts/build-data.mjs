@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { addDaysKst, nowKstDate, validateItem, buildItemId } from "./lib.mjs";
+import { addDaysKst, nowKstDate, validateItem, buildItemId, inferSubregion } from "./lib.mjs";
 import { scrapeOfficialListings } from "./scrape-official.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -140,6 +140,19 @@ function dedupeById(items) {
   return output;
 }
 
+function normalizeSubregions(items) {
+  return items.map((item) => {
+    const inferred = inferSubregion(
+      `${item.region || ""} ${item.subregion || ""} ${item.name || ""} ${item.supplyType || ""}`,
+      item.region
+    );
+    return {
+      ...item,
+      subregion: inferred
+    };
+  });
+}
+
 function toPayload(items, logs, sources) {
   const now = nowKstDate();
   return {
@@ -213,7 +226,7 @@ async function main() {
   ].filter(Boolean);
 
   if (validScraped.length) {
-    const merged = dedupeById([...validScraped, ...manual, ...extras, ...existing]);
+    const merged = normalizeSubregions(dedupeById([...validScraped, ...manual, ...extras, ...existing]));
     const maybeForced = withForcedTestItem(merged, [
       ...logs,
       `수기 병합 건수=${manual.length}`,
@@ -230,7 +243,7 @@ async function main() {
   }
 
   if (existing.length || manual.length || extras.length) {
-    const merged = dedupeById([...manual, ...extras, ...existing]);
+    const merged = normalizeSubregions(dedupeById([...manual, ...extras, ...existing]));
     const maybeForced = withForcedTestItem(merged, [
       ...logs,
       `수기 병합 건수=${manual.length}`,
@@ -246,7 +259,7 @@ async function main() {
     return;
   }
 
-  const seeded = buildFallbackSeed();
+  const seeded = normalizeSubregions(buildFallbackSeed());
   const maybeForced = withForcedTestItem(seeded, [
     ...logs,
     `공식 파싱/기존 데이터 없음 - 초기 샘플 데이터 사용 (TARGET_YEAR=${TARGET_YEAR}, TARGET_REGIONS=${[

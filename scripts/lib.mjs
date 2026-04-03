@@ -26,6 +26,34 @@ export const KOREA_REGIONS = [
   { region: "분당", pattern: /(분당|성남시\s*분당구)/ }
 ];
 
+const SEOUL_DISTRICTS = [
+  "강남구",
+  "강동구",
+  "강북구",
+  "강서구",
+  "관악구",
+  "광진구",
+  "구로구",
+  "금천구",
+  "노원구",
+  "도봉구",
+  "동대문구",
+  "동작구",
+  "마포구",
+  "서대문구",
+  "서초구",
+  "성동구",
+  "성북구",
+  "송파구",
+  "양천구",
+  "영등포구",
+  "용산구",
+  "은평구",
+  "종로구",
+  "중구",
+  "중랑구"
+];
+
 export function nowKstDate() {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat("sv-SE", {
@@ -73,6 +101,23 @@ export function classifyRegionBroad(text) {
     if (target.pattern.test(text)) return target.region;
   }
   return "기타";
+}
+
+export function inferSubregion(text, region) {
+  const sample = String(text || "");
+  if (region === "서울") {
+    for (const district of SEOUL_DISTRICTS) {
+      if (sample.includes(district)) return district;
+    }
+    return "서울";
+  }
+  if (region === "분당") {
+    return "성남시 분당구";
+  }
+  if (region === "과천") {
+    return "과천시";
+  }
+  return region || "기타";
 }
 
 export function buildItemId(name, startDate, region, provider) {
