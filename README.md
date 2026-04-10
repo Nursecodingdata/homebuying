@@ -32,8 +32,7 @@ npm run dev
 - `MAIL_USER`
 - `MAIL_PASSWORD`
 - `MAIL_FROM` (옵션, 미설정 시 `MAIL_USER` 사용)
-
-수신자 주소는 현재 코드에 `kellyanne@naver.com`으로 고정되어 있습니다.
+- `ALERT_RECIPIENTS` (옵션, 쉼표 구분 다중 수신자. 미설정 시 `MAIL_USER` 사용)
 
 ## 메일 중복 방지
 

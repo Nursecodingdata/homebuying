@@ -12,12 +12,23 @@ const DATA_PATHS = [
   path.join(ROOT, "src", "data", "listings.json")
 ];
 const ALERT_STATE_PATH = path.join(ROOT, ".state", "sent-alerts.json");
-const RECIPIENTS = ["kellyanne@naver.com"];
 
 function requireEnv(name) {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required env: ${name}`);
   return value;
+}
+
+function resolveRecipients(fallbackEmail) {
+  const raw = process.env.ALERT_RECIPIENTS || fallbackEmail;
+  const recipients = String(raw || "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+  if (!recipients.length) {
+    throw new Error("No recipients resolved. Set ALERT_RECIPIENTS or MAIL_USER.");
+  }
+  return recipients;
 }
 
 async function readListings() {
@@ -94,6 +105,7 @@ async function main() {
   const user = requireEnv("MAIL_USER");
   const pass = requireEnv("MAIL_PASSWORD");
   const from = process.env.MAIL_FROM || user;
+  const recipients = resolveRecipients(user);
 
   const transporter = nodemailer.createTransport({
     host,
@@ -105,7 +117,7 @@ async function main() {
   const { subject, text } = composeMail(unsent, baseDate);
   await transporter.sendMail({
     from,
-    to: RECIPIENTS.join(","),
+    to: recipients.join(","),
     subject,
     text
   });
@@ -113,11 +125,11 @@ async function main() {
   for (const item of unsent) {
     state.sentKeys[keyFor(item)] = {
       sentAt: new Date().toISOString(),
-      recipient: RECIPIENTS
+      recipient: recipients
     };
   }
   await writeState(state);
-  console.log(`[alert] sent ${unsent.length} reminder(s) to ${RECIPIENTS.join(", ")}`);
+  console.log(`[alert] sent ${unsent.length} reminder(s) to ${recipients.join(", ")}`);
 }
 
 main().catch((e) => {

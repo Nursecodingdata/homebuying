@@ -55,6 +55,7 @@ jobs:
           MAIL_USER: ${{ secrets.MAIL_USER }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          ALERT_RECIPIENTS: ${{ secrets.ALERT_RECIPIENTS }}
         run: npm run alerts:send
 
       - name: Save alert state cache
